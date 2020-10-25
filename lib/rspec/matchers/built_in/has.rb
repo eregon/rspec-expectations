@@ -7,16 +7,8 @@ module RSpec
       class DynamicPredicate < BaseMatcher
         include BeHelpers
 
-        if RSpec::Support::RubyFeatures.kw_args_supported?
-          binding.eval(<<-CODE, __FILE__, __LINE__)
-          def initialize(method_name, *args, **kwargs, &block)
-            @method_name, @args, @kwargs, @block = method_name, args, kwargs, block
-          end
-          CODE
-        else
-          def initialize(method_name, *args, &block)
-            @method_name, @args, @block = method_name, args, block
-          end
+        ruby2_keywords def initialize(method_name, *args, &block)
+          @method_name, @args, @block = method_name, args, block
         end
 
         # @private
@@ -70,20 +62,8 @@ module RSpec
           end
         end
 
-        if RSpec::Support::RubyFeatures.kw_args_supported?
-          binding.eval(<<-CODE, __FILE__, __LINE__)
-          def predicate_result
-            if @kwargs.empty?
-              @predicate_result = actual.__send__(predicate_method_name, *@args, &@block)
-            else
-              @predicate_result = actual.__send__(predicate_method_name, *@args, **@kwargs, &@block)
-            end
-          end
-          CODE
-        else
-          def predicate_result
-            @predicate_result = actual.__send__(predicate_method_name, *@args, &@block)
-          end
+        def predicate_result
+          @predicate_result = actual.__send__(predicate_method_name, *@args, &@block)
         end
 
         def predicate_method_name
